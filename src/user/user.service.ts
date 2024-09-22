@@ -26,7 +26,7 @@ export class UserService {
       data: {
         username: user.username,
         email: user.email,
-        password_hash: password,
+        password: password,
         language_preference: user.language_preference,
         timezone: user.timezone,
       },
