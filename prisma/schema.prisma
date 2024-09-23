@@ -3,11 +3,15 @@ generator client {
 }
 
 datasource db {
-    provider = "mysql"
+    provider = "postgresql"
     url      = env("DATABASE_URL")
 }
 
-// Modelos base necesarios para el proyecto
+enum Role {
+    ADMIN
+    USER
+}
+
 model Account {
     id                       String  @id @default(cuid())
     userId                   String
@@ -43,7 +47,6 @@ model VerificationToken {
     @@unique([identifier, token])
 }
 
-// Modelos convertidos del diagrama dbdiagram.io
 model User {
     id                 String               @id @default(uuid()) @db.VarChar(36)
     username           String?               @unique
@@ -51,11 +54,12 @@ model User {
     password           String?
     created_at         DateTime             @default(now())
     profile_picture_url String?
+    banner_picture_url String?
     language_preference String?
     timezone           String?
     name               String?
     emailVerified      DateTime?
-    image              String?
+    roles              Role[]               @default([USER])
     accounts           Account[]
     sessions           Session[]
     tasks              Task[]

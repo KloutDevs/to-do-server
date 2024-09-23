@@ -1,3 +1,25 @@
 {
-    "material-icon-theme.activeIconPack": "nest"
+  "material-icon-theme.activeIconPack": "nest",
+  "material-icon-theme.folders.associations": {
+    "entities": "class",
+    "domain": "mappings",
+    "application": "app",
+    "infrastructure": "gh-workflows",
+    "roles": "proto",
+    "use-cases": "components",
+    "repositories": "resolver",
+    "dtos": "interface",
+    "users": "stack",
+    "strategy": "connection",
+  },
+  "material-icon-theme.files.associations": {
+    "user.entity.ts": "database",
+    "*.repository.ts": "database",
+    "*.dto.ts": "deepsource",
+    "*.use-case.ts": "class",
+    "createuser.use-case.ts": "lib"
+  },
+  "cSpell.words": [
+    "usecases"
+  ]
 }

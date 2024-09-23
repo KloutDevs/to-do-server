@@ -1,4 +1,5 @@
-import { IsString, IsEmail, MinLength, IsOptional } from 'class-validator';
+import { IsString, IsEmail, MinLength, IsOptional, IsEnum, IsArray } from 'class-validator';
+import { Role } from '@/contexts/shared/types/roles';
 
 export class CreateUserDto {
   @IsString()
@@ -19,4 +20,9 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   timezone?: string;
+
+  @IsEnum(Role, { each: true })
+  @IsArray()
+  roles: Role[];
 }
+
