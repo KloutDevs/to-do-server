@@ -1,18 +1,19 @@
-import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, Inject, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
-import { AuthService } from '../auth.service';
-import { User } from '@prisma/client';
+import { AuthService } from '@/contexts/infrastructure/repositories/auth.repository.adapter';
+import { User } from '@/contexts/domain/models/user.entity';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
-  constructor(private authService: AuthService) {
+  constructor(@Inject('authRepository') private authService: AuthService) {
     super({
       usernameField: 'email',
     });
   }
 
   async validate(email: string, password: string): Promise<User> {
+    console.log('ITS HERE');
     /*
       Make a fix for the validate
       because the BadRequestException isn't sended
@@ -21,10 +22,11 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (!email || !password) {
       throw new BadRequestException('Email and password are required');
     }
-    const user = await this.authService.validateUser(email, password);
-    if (!user) {
+    console.log(`VALIDATE LOCAL STRATEGY: `)
+    const validatedUser = await this.authService.validateUser({email, password});
+    if (!validatedUser) {
       throw new UnauthorizedException('Invalid email or password');
     }
-    return user;
+    return validatedUser;
   }
 }

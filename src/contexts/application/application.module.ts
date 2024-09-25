@@ -6,6 +6,8 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigService, ConfigModule } from '@nestjs/config';
 import { AuthService } from '@/contexts/infrastructure/repositories/auth.repository.adapter';
+import { LocalStrategy } from '../shared/strategy/local.strategy';
+import { JwtStrategy } from '../shared/strategy/jwt.strategy';
 
 @Module({
   imports: [
@@ -23,6 +25,8 @@ import { AuthService } from '@/contexts/infrastructure/repositories/auth.reposit
   providers: [
     AuthUseCase,
     PrismaService,
+    JwtStrategy,
+    LocalStrategy,
     {
       provide: 'userRepository',
       useClass: PrismaUserRepository,
