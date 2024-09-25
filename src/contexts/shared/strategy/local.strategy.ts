@@ -13,7 +13,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(email: string, password: string): Promise<User> {
-    console.log('ITS HERE');
     /*
       Make a fix for the validate
       because the BadRequestException isn't sended
@@ -22,7 +21,6 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
     if (!email || !password) {
       throw new BadRequestException('Email and password are required');
     }
-    console.log(`VALIDATE LOCAL STRATEGY: `)
     const validatedUser = await this.authService.validateUser({email, password});
     if (!validatedUser) {
       throw new UnauthorizedException('Invalid email or password');

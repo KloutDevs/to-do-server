@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
-import { PrismaUserRepository } from '@/contexts/infrastructure/repositories/prisma-user.repository.adapter';
-import { PrismaService } from '../infrastructure/prisma/prisma.service';
-import { AuthUseCase } from './usecases/auth/auth.use-case';
-import { PassportModule } from '@nestjs/passport';
-import { JwtModule } from '@nestjs/jwt';
 import { ConfigService, ConfigModule } from '@nestjs/config';
+import { PrismaService } from '../infrastructure/prisma/prisma.service';
+import { PrismaUserRepository } from '@/contexts/infrastructure/repositories/prisma-user.repository.adapter';
 import { AuthService } from '@/contexts/infrastructure/repositories/auth.repository.adapter';
-import { LocalStrategy } from '../shared/strategy/local.strategy';
+import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from '../shared/strategy/jwt.strategy';
+import { LocalStrategy } from '../shared/strategy/local.strategy';
+import { JwtModule } from '@nestjs/jwt';
+import { AuthUseCase } from '@/contexts/application/usecases/auth/auth.use-case';
+import {deleteUserUseCase, getAllUsersUseCase, getUserByEmailUseCase, getUserByIdUseCase, updateUserUseCase} from '@/contexts/application/usecases/users'
 
 @Module({
   imports: [
@@ -24,6 +25,11 @@ import { JwtStrategy } from '../shared/strategy/jwt.strategy';
   ],
   providers: [
     AuthUseCase,
+    getUserByIdUseCase,
+    getUserByEmailUseCase,
+    deleteUserUseCase,
+    updateUserUseCase,
+    getAllUsersUseCase,
     PrismaService,
     JwtStrategy,
     LocalStrategy,
@@ -37,7 +43,12 @@ import { JwtStrategy } from '../shared/strategy/jwt.strategy';
     }
   ],
   exports: [
-    AuthUseCase
+    AuthUseCase,
+    getUserByIdUseCase,
+    getUserByEmailUseCase,
+    deleteUserUseCase,
+    updateUserUseCase,
+    getAllUsersUseCase,
   ],
 })
 export class ApplicationModule {}

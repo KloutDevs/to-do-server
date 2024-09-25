@@ -6,7 +6,7 @@ import { AuthController } from '@/contexts/infrastructure/http-api/v1/auth/Auth.
 
 @Module({
   imports: [ApplicationModule],
-  controllers: [AuthController],
+  controllers: [AuthController, UserController],
   providers: [],
   exports: [],
 })

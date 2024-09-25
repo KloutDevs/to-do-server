@@ -5,9 +5,10 @@ import { LoginResponseDto } from './dtos/loginResponse.dto';
 import { RegisterRequestDto } from './dtos/registerRequest.dto';
 import { RegisterResponseDto } from './dtos/registerResponse.dto';
 import { Public } from '@/contexts/shared/decorators';
+import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/route.constants';
 
 @Public()
-@Controller('auth')
+@Controller(`${API_VERSION}/auth`)
 export class AuthController {
   constructor(private authUseCase: AuthUseCase) {}
 

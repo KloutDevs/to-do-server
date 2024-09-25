@@ -15,4 +15,3 @@ export interface User{
   export type CreateUserDTO = Required<Pick<User, 'username' | 'email'>> & Partial<Omit<User, 'username' | 'email' | 'id' | 'created_at'>>;
   
   export type UserWithoutIdAndCreatedAt = Required<Omit<User, 'id' | 'created_at'>>;
-  

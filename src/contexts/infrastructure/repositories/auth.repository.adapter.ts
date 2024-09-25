@@ -18,10 +18,7 @@ export class AuthService implements AuthRepository {
     if(!searchUser) {
         throw new BadRequestException('User not found.');
     }
-    console.log(`VALIDATE USER AUTH SERVICE:`)
-    console.log(searchUser.email)
     const isMatch: boolean = bcrypt.compareSync(user.password, searchUser.password);
-    console.log(`Is match: ${isMatch}`);
     if(!isMatch){
         throw new BadRequestException('Password does not match.')
     }
