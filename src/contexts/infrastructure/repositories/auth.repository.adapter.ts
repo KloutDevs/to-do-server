@@ -30,8 +30,10 @@ export class AuthService implements AuthRepository {
     return { access_token: this.jwtService.sign(payload) };
   }
   async register(user: RegisterRequest): Promise<AccessToken>{
-    const existingUser = await this.userService.findOneByEmail(user.email);
-    if(existingUser) throw new BadRequestException('Email already exists.');
+    const existingEmail = await this.userService.findOneByEmail(user.email);
+    if(existingEmail) throw new BadRequestException('Email already exists.');
+    const existingUsername = await this.userService.findOneByUsername(user.username);
+    if(existingUsername) throw new BadRequestException('Username already exists.');
     const hashedPassword = await bcrypt.hash(user.password, 10);
     let newUser = await this.userService.create(user, hashedPassword);
     return this.login(newUser)

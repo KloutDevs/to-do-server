@@ -1,45 +1,58 @@
-import { Controller, Get, Res, HttpStatus, Body, Param, Post } from "@nestjs/common";
+import { Controller, Get, Post, Res, HttpStatus, Body, Param, NotFoundException, HttpCode } from "@nestjs/common";
 import { API_VERSION } from "@/contexts/infrastructure/http-api/v1/route.constants";
-import { getUserByIdUseCase, getUserByEmailUseCase, deleteUserUseCase, updateUserUseCase, getAllUsersUseCase } from "@/contexts/application/usecases/users";
+import { getUserByIdUseCase, getUserByEmailUseCase, getUserByUsernameUseCase, deleteUserUseCase, PartialUpdateUseCase, getAllUsersUseCase } from "@/contexts/application/usecases/users";
 import { User } from "@/contexts/domain/models/user.entity";
+
 @Controller(`${API_VERSION}/users`)
-export class UserController{
+export class UserController {
     constructor(
         private readonly getUserByIdUseCase: getUserByIdUseCase,
         private readonly getUserByEmailUseCase: getUserByEmailUseCase,
+        private readonly getUserByUsernameUseCase: getUserByUsernameUseCase,
         private readonly deleteUserUseCase: deleteUserUseCase,
-        private readonly updateUserUseCase: updateUserUseCase,
+        private readonly partialUpdateUseCase: PartialUpdateUseCase,
         private readonly getAllUsersUseCase: getAllUsersUseCase,
-    ){}
+    ) {}
 
     @Get(':id')
-    async getUserById(@Res() response, @Param('id') userId: string): Promise<User>{
-        const user = await this.getUserByIdUseCase.execute(userId)
-        return response.status(HttpStatus.FOUND).json(user);
+    @HttpCode(HttpStatus.OK)
+    async getUserById(@Param('id') userId: string): Promise<User> {
+        const user = await this.getUserByIdUseCase.execute(userId);
+        if (!user) throw new NotFoundException(`User with ID ${userId} not found`);
+        return user;
     }
 
-    @Get(':email')
-    async getUserByEmail(@Res() response, @Param('email') email: string): Promise<User>{
+    @Get('email/:email')
+    @HttpCode(HttpStatus.OK)
+    async getUserByEmail(@Param('email') email: string): Promise<User> {
         const user = await this.getUserByEmailUseCase.execute(email);
-        return response.status(HttpStatus.FOUND).json(user);
+        if (!user) throw new NotFoundException(`User with email ${email} not found`);
+        return user;
     }
 
-    @Get('delete/:id')
-    async deleteUser(@Res() response, @Param('id') userId: string): Promise<User>{
-        const user = await this.deleteUserUseCase.execute(userId);
-        return response.status(HttpStatus.OK).json(user);
+    @Get('username/:username')
+    @HttpCode(HttpStatus.OK)
+    async getUserByUsername(@Param('username') username: string): Promise<User> {
+        const user = await this.getUserByUsernameUseCase.execute(username);
+        if (!user) throw new NotFoundException(`User with username ${username} not found`);
+        return user;
+    }
+
+    @Post('delete/:id')
+    @HttpCode(HttpStatus.OK)
+    async deleteUser(@Param('id') userId: string): Promise<User> {
+        return this.deleteUserUseCase.execute(userId);
     }
     
     @Post('update/:id')
-    async updateUser(@Res() response, @Body() user: User, @Param('id') userId: string){
-        const newUser = await this.updateUserUseCase.execute(userId, user);
-        return response.status(HttpStatus.OK).json(newUser);
+    @HttpCode(HttpStatus.OK)
+    async updateUser(@Body() user: Partial<User>, @Param('id') userId: string): Promise<User> {
+        return this.partialUpdateUseCase.execute(userId, user);
     }
 
-    @Get('all')
-    async getAllUsers(@Res() response):Promise<User[]>{
-        const users = await this.getAllUsersUseCase.execute();
-        return response.status(HttpStatus.OK).json(users);
+    @Get()
+    @HttpCode(HttpStatus.OK)
+    async getAllUsers(): Promise<User[]> {
+        return this.getAllUsersUseCase.execute();
     }
-
 }

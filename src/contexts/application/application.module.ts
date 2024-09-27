@@ -8,7 +8,7 @@ import { JwtStrategy } from '../shared/strategy/jwt.strategy';
 import { LocalStrategy } from '../shared/strategy/local.strategy';
 import { JwtModule } from '@nestjs/jwt';
 import { AuthUseCase } from '@/contexts/application/usecases/auth/auth.use-case';
-import {deleteUserUseCase, getAllUsersUseCase, getUserByEmailUseCase, getUserByIdUseCase, updateUserUseCase} from '@/contexts/application/usecases/users'
+import {deleteUserUseCase, getAllUsersUseCase, getUserByEmailUseCase, getUserByIdUseCase, getUserByUsernameUseCase, PartialUpdateUseCase} from '@/contexts/application/usecases/users'
 
 @Module({
   imports: [
@@ -27,8 +27,9 @@ import {deleteUserUseCase, getAllUsersUseCase, getUserByEmailUseCase, getUserByI
     AuthUseCase,
     getUserByIdUseCase,
     getUserByEmailUseCase,
+    getUserByUsernameUseCase,
     deleteUserUseCase,
-    updateUserUseCase,
+    PartialUpdateUseCase,
     getAllUsersUseCase,
     PrismaService,
     JwtStrategy,
@@ -46,8 +47,9 @@ import {deleteUserUseCase, getAllUsersUseCase, getUserByEmailUseCase, getUserByI
     AuthUseCase,
     getUserByIdUseCase,
     getUserByEmailUseCase,
+    getUserByUsernameUseCase,
     deleteUserUseCase,
-    updateUserUseCase,
+    PartialUpdateUseCase,
     getAllUsersUseCase,
   ],
 })
