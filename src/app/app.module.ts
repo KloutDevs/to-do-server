@@ -5,10 +5,11 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from '@/contexts/shared/guards';
+import { JwtAuthGuard, JwtRedisGuard } from '@/contexts/shared/guards';
 import { PrismaUserRepository } from '@/contexts/infrastructure/repositories/prisma-user.repository.adapter';
 import { PrismaService } from '@/contexts/infrastructure/prisma/prisma.service';
 import { JwtStrategy } from '@/contexts/shared/strategy/jwt.strategy';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { JwtStrategy } from '@/contexts/shared/strategy/jwt.strategy';
   controllers: [AppController],
   providers: [
     AppService,
+    JwtService,
     PrismaService,
     {
       provide: 'userRepository',
@@ -30,7 +32,9 @@ import { JwtStrategy } from '@/contexts/shared/strategy/jwt.strategy';
       provide: APP_GUARD,
       useClass: JwtAuthGuard
     },
+    JwtRedisGuard,
     JwtStrategy
   ],
+  exports: [JwtService]
 })
 export class AppModule {}

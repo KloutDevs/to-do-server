@@ -5,9 +5,8 @@ import {
   CreateUserDTO,
   User,
   UserWithoutIdAndCreatedAt,
+  verificationToken,
 } from '@/contexts/domain/models/user.entity';
-import { Prisma } from '@prisma/client';
-
 @Injectable()
 export class PrismaUserRepository implements UserRepository {
   constructor(private db: PrismaService) {}
@@ -38,6 +37,10 @@ export class PrismaUserRepository implements UserRepository {
     return this.db.user.findUnique({ where: { username } });
   }
 
+  async publicProfile(id: string): Promise<User> {
+    return this.db.user.findUnique({ where: { id } });
+  }
+
   async getAllUsers(): Promise<User[]> {
     return this.db.user.findMany({
       orderBy: { created_at: 'desc' },
@@ -55,4 +58,36 @@ export class PrismaUserRepository implements UserRepository {
       data: partialUser,
     });
   }
+
+  async setVerificationToken(id: string, token: string): Promise<verificationToken> {
+    const updateToken = await this.db.verificationToken.create({
+      data: {
+        identifier: id,
+        token,
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3),
+      },
+    });
+    return updateToken;
+  }
+
+  async findByVerificationToken(token: string): Promise<verificationToken> {
+    return this.db.verificationToken.findUnique({
+      where: { token },
+    });
+  }
+
+  async getTokensByIdentifier(id: string): Promise<verificationToken[]> {
+    return this.db.verificationToken.findMany({
+      where: { identifier: id },
+    });
+  }
+
+  async deleteExpiredToken(id: string): Promise<boolean> {
+    const deletedTokens = await this.db.verificationToken.deleteMany({
+      where: { identifier: id },
+    });
+    if (deletedTokens.count === 0) return false;
+    return true;
+  }
+
 }

@@ -1,27 +1,70 @@
-import { Controller, Request, Post, UseGuards, BadRequestException, Body, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Controller, Headers, Post, UseGuards, BadRequestException, Body, UsePipes, ValidationPipe, Query, Get } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthUseCase } from '@/contexts/application/usecases/auth/auth.use-case';
-import { LoginResponseDto } from './dtos/loginResponse.dto';
-import { RegisterRequestDto } from './dtos/registerRequest.dto';
-import { RegisterResponseDto } from './dtos/registerResponse.dto';
+import { 
+  LoginValidationGuard,
+  JwtRedisGuard
+ } from '@/contexts/shared/guards';
+import { 
+  LoginUseCase, 
+  RegisterUseCase, 
+  VerifyEmailUseCase, 
+  ResendEmailVerificationUseCase,
+  LogoutUseCase
+} from '@/contexts/application/usecases/auth';
 import { Public } from '@/contexts/shared/decorators';
 import { API_VERSION } from '@/contexts/infrastructure/http-api/v1/route.constants';
+import { 
+  LoginRequestDto, 
+  LoginResponseDto, 
+  RegisterRequestDto, 
+  RegisterResponseDto, 
+  VerifyEmailRequestDto
+} from '@/contexts/infrastructure/http-api/v1/auth/dtos';
 
 @Public()
 @Controller(`${API_VERSION}/auth`)
 export class AuthController {
-  constructor(private authUseCase: AuthUseCase) {}
+  constructor(
+    private loginUseCase: LoginUseCase,
+    private registerUseCase: RegisterUseCase,
+    private verifyEmailUseCase: VerifyEmailUseCase,
+    private resendEmailVerificationUseCase: ResendEmailVerificationUseCase,
+    private logoutUseCase: LogoutUseCase,
+  ) {}
 
-  @UseGuards(AuthGuard('local'))
+  @UseGuards(LoginValidationGuard, AuthGuard('local'))
   @Post('login')
-  @UsePipes(new ValidationPipe({transform: true}))
-  async login(@Request() req): Promise<LoginResponseDto | BadRequestException> {
-    return this.authUseCase.login(req.user);
+  async login(@Body() loginBody: LoginRequestDto): Promise<LoginResponseDto | BadRequestException> {
+    return this.loginUseCase.login(loginBody);
   }
   
   @Post('register')
   @UsePipes(new ValidationPipe())
   async register(@Body() registerBody: RegisterRequestDto): Promise<RegisterResponseDto | BadRequestException> {
-    return this.authUseCase.register(registerBody);
+    return this.registerUseCase.register(registerBody);
   }
+
+  @UseGuards(JwtRedisGuard)
+  @Post('logout')
+  async logout(@Headers('authorization') token: string): Promise<void | BadRequestException> {
+    token = token.replace('Bearer ', '');
+    return this.logoutUseCase.execute(token);
+  }
+
+  @Post('verify-email')
+  @UsePipes(new ValidationPipe())
+  async verifyEmail(@Body() verifyEmailBody: VerifyEmailRequestDto): Promise<boolean | BadRequestException> {
+    return this.verifyEmailUseCase.verifyEmail(verifyEmailBody);
+  }
+
+  @Get('verify-email')
+  async confirmEmail(@Query('token') token: string): Promise<boolean | BadRequestException> {
+    return this.verifyEmailUseCase.confirmVerification(token);
+  }
+
+  @Post('resend-email')
+  async resendEmail(@Body() verifyEmailBody: VerifyEmailRequestDto): Promise<boolean | BadRequestException> {
+    return this.resendEmailVerificationUseCase.resendEmailVerification(verifyEmailBody);
+  }
+
 }

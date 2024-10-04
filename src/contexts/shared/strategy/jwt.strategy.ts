@@ -7,6 +7,7 @@ import { AccessTokenPayload } from '@/contexts/domain/models/auth.entity';
 export class JwtStrategy extends PassportStrategy(Strategy) { /* Implements the JWT strategy */
   constructor(private configService: ConfigService) { /* Get the .env */
     super({
+      global: true,
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(), /* Extract token from Authorization: Bearer {TOKEN} */
       ignoreExpiration: false,
       secretOrKey: configService.get<string>('JWT_SECRET'),
