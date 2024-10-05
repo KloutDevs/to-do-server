@@ -1,8 +1,7 @@
-import { Controller, Headers, Post, UseGuards, BadRequestException, Body, UsePipes, ValidationPipe, Query, Get } from '@nestjs/common';
+import { Controller, Headers, Post, UseGuards, BadRequestException, Body, UsePipes, ValidationPipe, Query, Get, HttpStatus, HttpCode } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { 
-  LoginValidationGuard,
-  JwtRedisGuard
+  LoginValidationGuard
  } from '@/contexts/shared/guards';
 import { 
   LoginUseCase, 
@@ -44,11 +43,11 @@ export class AuthController {
     return this.registerUseCase.register(registerBody);
   }
 
-  @UseGuards(JwtRedisGuard)
-  @Post('logout')
-  async logout(@Headers('authorization') token: string): Promise<void | BadRequestException> {
+  @Get('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Headers('authorization') token: string): Promise<{message: string} | BadRequestException> {
     token = token.replace('Bearer ', '');
-    return this.logoutUseCase.execute(token);
+    return await this.logoutUseCase.execute(token);
   }
 
   @Post('verify-email')

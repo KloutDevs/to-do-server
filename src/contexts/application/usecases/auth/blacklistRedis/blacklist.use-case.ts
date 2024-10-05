@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, BadRequestException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
@@ -9,37 +9,24 @@ export class RedisBlacklistUseCase {
 
   async addToBlacklist(token: string, expirationTime: number): Promise<void> {
     try {
-      console.log(`Adding token to blacklist: ${token}`);
       let blacklist: string[] =
         (await this.cacheService.get(this.BLACKLIST_KEY)) || [];
-      const test = await this.cacheService.get(this.BLACKLIST_KEY);
-      console.log('Test:', test);
-      console.log('Current blacklist:', blacklist);
-      if (!blacklist.includes(token)) {
-        console.log('Is not in blacklist, adding!');
-        blacklist.push(token);
-        console.log('Blacklist after push token')
-        console.log(blacklist)
+      if (blacklist.includes(token)) {
+        throw new BadRequestException('Token is already blacklisted');
       }
-      await this.cacheService.set('test_key', 'test_value');
-      const aaa = await this.cacheService.get('test_key');
-      console.log('Test after set:', aaa);
+      blacklist.push(token);
       await this.cacheService.set(this.BLACKLIST_KEY, blacklist);
-      const bbb = await this.cacheService.get(this.BLACKLIST_KEY);
-      console.log('Blacklist after set:', bbb);
     } catch (error) {
-      console.error('Failed to add token to blacklist:', error);
+      console.error('Failed to add token to blacklist:');
       throw error;
     }
   }
 
   async isBlacklisted(token: string): Promise<boolean> {
-    console.log(`Checking blacklist for token ${token}`);
     if (!token) return false;
     const blacklist: string[] =
       (await this.cacheService.get(this.BLACKLIST_KEY)) || [];
     const isBlacklisted = blacklist.includes(token);
-    console.log('Is blacklisted result:', isBlacklisted);
     return isBlacklisted;
   }
 

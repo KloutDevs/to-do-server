@@ -5,6 +5,6 @@ import { AuthRepository } from '@/contexts/domain/repositories';
 export class LogoutUseCase {
     constructor(@Inject('authRepository') private authRepository:AuthRepository){}
     async execute(userId: string){
-        await this.authRepository.logout(userId);
+        return await this.authRepository.logout(userId);
     }
 }
