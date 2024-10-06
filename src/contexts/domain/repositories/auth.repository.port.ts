@@ -6,10 +6,6 @@ export abstract class AuthRepository{
     abstract login(user: LoginRequest): Promise<AccessToken>;
     abstract logout(token: string): Promise<{message: string}>;
     abstract register(user: RegisterRequest): Promise<AccessToken>;
-    abstract verifyEmail(userId: string): Promise<Boolean>;
-    abstract resendVerificationEmail(userId: string): Promise<Boolean>;
-    abstract resetPassword(userId: string): Promise<Boolean>;
-    abstract resetPasswordConfirm(userId: string, newPassword: string): Promise<Boolean>;
     abstract changePassword(userId: string, lastPassword: string, newPassword: string): Promise<Boolean>;
     abstract refreshToken(token: AccessToken): Promise<AccessToken>;
     abstract getGitHubProvider(): Promise<void>;

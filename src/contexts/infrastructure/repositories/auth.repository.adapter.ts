@@ -52,22 +52,6 @@ export class AuthService implements AuthRepository {
     return this.login(newUser)
   }
 
-  async verifyEmail(userId: string): Promise<Boolean> {
-    return false;
-  }
-
-  async resendVerificationEmail(userId: string): Promise<Boolean> {
-    return false;
-  }
-
-  async resetPassword(userId: string): Promise<Boolean> {
-    return false;
-  }
-
-  async resetPasswordConfirm(userId: string, newPassword: string): Promise<Boolean> {
-    return false;
-  }
-
   async changePassword(userId: string, lastPassword: string, newPassword: string): Promise<Boolean> {
       const user = await this.userService.findOneById(userId);
       if(!user) throw new BadRequestException('User not found.');
