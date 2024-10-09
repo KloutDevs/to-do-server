@@ -1,201 +1,201 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
-    ADMIN
-    USER
+  ADMIN
+  USER
 }
 
-model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? @db.Text
-    access_token             String? @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
-
-    @@unique([provider, providerAccountId])
-}
-
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
+enum Status {
+  OPEN
+  IN_PROGRESS
+  COMPLETED
 }
 
 model User {
-    id                 String               @id @default(uuid()) @db.VarChar(36)
-    username           String?               @unique
-    email              String               @unique
-    password           String?
-    created_at         DateTime             @default(now())
-    profile_picture_url String?
-    banner_picture_url String?
-    language_preference String?
-    timezone           String?
-    name               String?
-    emailVerified      DateTime?
-    roles              Role[]               @default([USER])
-    accounts           Account[]
-    sessions           Session[]
-    tasks              Task[]
-    projects           Project[]
-    tags               Tag[]
-    notifications      Notification[]
-    activityLogs       ActivityLog[]
-    settings           Setting[]
-    collaborations     ProjectCollaborator[]
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  username            String    @unique @db.VarChar(100)
+  email               String    @unique @db.VarChar(100)
+  password            String?    @db.VarChar(50)
+  created_at          DateTime  @default(now())
+  profile_picture_url String?   @db.VarChar(255)
+  banner_picture_url  String?   @db.VarChar(255)
+  language_preference String?   @db.VarChar(50)
+  timezone            String?   @db.VarChar(50)
+  name                String?   @db.VarChar(25)
+  emailVerified       DateTime?
+  roles               Role[]    @default([USER])
+  workspaces          Workspace[]
+  tasks               Task[]
+  collaborations      WorkspaceCollaborator[]
+  tags                Tags[]
+  notifications       Notifications[]
+  activityLogs        ActivityLogs[]
+  settings            Settings[]
+  accounts            Account[]
+  sessions            Session[]
+  verificationTokens  VerificationToken[]
+}
+
+model Workspace {
+  id             String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String    @db.Uuid
+  name           String    @db.VarChar(100)
+  description    String?
+  created_at     DateTime  @default(now())
+  isArchived     Boolean?
+  archived_date  DateTime?
+  user           User      @relation(fields: [user_id], references: [id])
+  tasks          Task[]
+  collaborators  WorkspaceCollaborator[]
+  tags           Tags[]
+  activityLogs   ActivityLogs[]
 }
 
 model Task {
-    id              Int           @id @default(autoincrement())
-    user_id         String
-    title           String
-    description     String?
-    due_date        DateTime?
-    status          String?
-    priority        Int           @default(0)
-    created_at      DateTime      @default(now())
-    updated_at      DateTime      @default(now())
-    completed_at    DateTime?
-    user            User          @relation(fields: [user_id], references: [id])
-    subtasks        Subtask[]
-    taskProjects    TaskProject[]
-    taskTags        TaskTag[]
-    reminders       Reminder[]
-    notifications   Notification[]
-    aiPriorities    AI_Priority[]
-    activityLogs    ActivityLog[]
+  task_id      String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdBy    String    @db.Uuid
+  workspace_id String    @db.Uuid
+  title        String    @db.VarChar(100)
+  description  String?
+  status       Status?   @default(OPEN)
+  priority     Int       @default(0)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now()) @updatedAt
+  due_date     DateTime?
+  completed_at DateTime?
+  user         User      @relation(fields: [createdBy], references: [id])
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
+  subtasks     Subtasks[]
+  taskTags     TaskTags[]
+  reminders    Reminders[]
+
+  @@unique([task_id])
 }
 
-model Subtask {
-    id       Int     @id @default(autoincrement())
-    task_id  Int
-    title    String
-    status   String?
-    task     Task    @relation(fields: [task_id], references: [id])
+model WorkspaceCollaborator {
+  collaborator_id String    @db.Uuid
+  workspace_id    String    @db.Uuid
+  role            String?   @db.VarChar(50)
+  added_at        DateTime  @default(now())
+  user            User      @relation(fields: [collaborator_id], references: [id])
+  workspace       Workspace @relation(fields: [workspace_id], references: [id])
+
+  @@id([collaborator_id, workspace_id])
 }
 
-model Project {
-    id           Int                   @id @default(autoincrement())
-    user_id      String
-    name         String
-    description  String?
-    created_at   DateTime              @default(now())
-    completed_at DateTime?
-    user         User                  @relation(fields: [user_id], references: [id])
-    taskProjects TaskProject[]
-    tags         Tag[]
-    collaborators ProjectCollaborator[]
+model Subtasks {
+  subtask_id   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id      String    @db.Uuid
+  title        String    @db.VarChar(255)
+  description  String?
+  status       Status?   @default(OPEN)
+  priority     Int       @default(0)
+  created_at   DateTime  @default(now())
+  updated_at   DateTime  @default(now()) @updatedAt
+  due_at       DateTime?
+  completed_at DateTime?
+  task         Task      @relation(fields: [task_id], references: [task_id])
+
+  @@id([subtask_id, task_id])
 }
 
-model TaskProject {
-    task_id    Int
-    project_id Int
-    task       Task    @relation(fields: [task_id], references: [id])
-    project    Project @relation(fields: [project_id], references: [id])
-
-    @@id([task_id, project_id])
+model Tags {
+  tag_id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  created_by   String    @db.Uuid
+  workspace_id String?   @db.Uuid
+  name         String    @db.VarChar(50)
+  color        String    @db.VarChar(50)
+  user         User      @relation(fields: [created_by], references: [id])
+  workspace    Workspace? @relation(fields: [workspace_id], references: [id])
+  taskTags     TaskTags[]
 }
 
-model Tag {
-    id         Int       @id @default(autoincrement())
-    user_id    String
-    project_id Int?
-    name       String
-    color      String
-    user       User      @relation(fields: [user_id], references: [id])
-    project    Project?  @relation(fields: [project_id], references: [id])
-    taskTags   TaskTag[]
+model TaskTags {
+  task_id String @db.Uuid
+  tag_id  String @db.Uuid
+  task    Task   @relation(fields: [task_id], references: [task_id])
+  tag     Tags   @relation(fields: [tag_id], references: [tag_id])
+
+  @@id([task_id, tag_id])
 }
 
-model TaskTag {
-    task_id Int
-    tag_id  Int
-    task    Task @relation(fields: [task_id], references: [id])
-    tag     Tag  @relation(fields: [tag_id], references: [id])
-
-    @@id([task_id, tag_id])
+model Reminders {
+  reminder_id   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  task_id       String   @db.Uuid
+  reminder_time DateTime
+  reminder_type String?  @db.VarChar(50)
+  task          Task     @relation(fields: [task_id], references: [task_id])
 }
 
-model ProjectCollaborator {
-    id            Int      @id @default(autoincrement())
-    project_id    Int
-    user_id       String
-    role          String?
-    added_at      DateTime @default(now())
-    project       Project  @relation(fields: [project_id], references: [id])
-    user          User     @relation(fields: [user_id], references: [id])
-
-    @@unique([project_id, user_id])
+model Notifications {
+  notification_id   String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String   @db.Uuid
+  notification_type String?  @db.VarChar(50)
+  message           String
+  created_at        DateTime @default(now())
+  user              User     @relation(fields: [user_id], references: [id])
 }
 
-model Reminder {
-    id             Int      @id @default(autoincrement())
-    task_id        Int
-    reminder_time  DateTime
-    reminder_type  String?
-    task           Task     @relation(fields: [task_id], references: [id])
+model ActivityLogs {
+  log_id       String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id      String    @db.Uuid
+  workspace_id String    @db.Uuid
+  action       String    @db.VarChar(255)
+  timestamp    DateTime  @default(now())
+  user         User      @relation(fields: [user_id], references: [id])
+  workspace    Workspace @relation(fields: [workspace_id], references: [id])
 }
 
-model Notification {
-    id                Int      @id @default(autoincrement())
-    user_id           String
-    task_id           Int
-    notification_type String?
-    message           String
-    created_at        DateTime @default(now())
-    user              User     @relation(fields: [user_id], references: [id])
-    task              Task     @relation(fields: [task_id], references: [id])
+model Settings {
+  setting_id String @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String @db.Uuid
+  key        String @db.VarChar(255)
+  value      String
+  user       User   @relation(fields: [user_id], references: [id])
 }
 
-model AI_Priority {
-    id                 Int       @id @default(autoincrement())
-    task_id            Int
-    urgency_score      Int
-    importance_score   Int
-    predicted_due_date DateTime?
-    task               Task      @relation(fields: [task_id], references: [id])
+model VerificationToken {
+  identifier String   @db.Uuid
+  token      String   @unique @db.Uuid
+  expires    DateTime
+  user       User     @relation(fields: [identifier], references: [id])
+
+  @@unique([identifier, token])
 }
 
-model ActivityLog {
-    id        Int      @id @default(autoincrement())
-    user_id   String
-    task_id   Int
-    action    String
-    timestamp DateTime @default(now())
-    user      User     @relation(fields: [user_id], references: [id])
-    task      Task     @relation(fields: [task_id], references: [id])
+model Session {
+  id           String   @db.Uuid
+  sessionToken String   @unique @db.Uuid
+  userId       String   @db.Uuid
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@id([id, userId])
 }
 
-model Setting {
-    id      Int    @id @default(autoincrement())
-    user_id String
-    key     String
-    value   String
-    user    User   @relation(fields: [user_id], references: [id])
+model Account {
+  id                    String  @db.Uuid
+  userId                String  @db.Uuid
+  type                  String  @db.Text
+  provider              String  @db.Text
+  providerAccountId     String  @db.Text
+  refresh_token         String? @db.Text
+  access_token          String? @db.Text
+  expires_at            Int?
+  token_type            String? @db.VarChar(50)
+  scope                 String? @db.VarChar(50)
+  id_token              String? @db.Text
+  session_state         String? @db.VarChar(50)
+  refresh_token_expires_in Int?
+  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@id([id, userId])
 }
