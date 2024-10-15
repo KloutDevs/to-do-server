@@ -22,7 +22,7 @@ model User {
   id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   username            String    @unique @db.VarChar(100)
   email               String    @unique @db.VarChar(100)
-  password            String?    @db.VarChar(50)
+  password            String?    @db.VarChar(60)
   created_at          DateTime  @default(now())
   profile_picture_url String?   @db.VarChar(255)
   banner_picture_url  String?   @db.VarChar(255)

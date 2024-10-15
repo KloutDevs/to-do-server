@@ -1,4 +1,2 @@
-export enum Role {
-    ADMIN,
-    USER
-}
+// En roles.ts
+export type Role = 'ADMIN' | 'USER';
