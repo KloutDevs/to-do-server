@@ -5,10 +5,10 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { APP_GUARD } from '@nestjs/core';
-import { JwtAuthGuard } from '@/contexts/shared/guards';
-import { PrismaUserRepository } from '@/contexts/infrastructure/repositories/prisma-user.repository.adapter';
-import { PrismaService } from '@/contexts/infrastructure/prisma/prisma.service';
-import { JwtStrategy } from '@/contexts/shared/strategy/jwt.strategy';
+import { JwtAuthGuard } from '@/contexts/shared/lib/guards';
+import { PrismaUserRepository } from '@/contexts/infrastructure/repositories/';
+import { PrismaService } from '@/contexts/shared/prisma/prisma.service';
+import { JwtStrategy } from '@/contexts/shared/lib/strategy/jwt.strategy';
 import { JwtService } from '@nestjs/jwt';
 
 @Module({
@@ -17,7 +17,7 @@ import { JwtService } from '@nestjs/jwt';
       isGlobal: true,
     }),
     ApplicationModule,
-    InfrastructureModule
+    InfrastructureModule,
   ],
   controllers: [AppController],
   providers: [
@@ -30,10 +30,10 @@ import { JwtService } from '@nestjs/jwt';
     },
     {
       provide: APP_GUARD,
-      useClass: JwtAuthGuard
+      useClass: JwtAuthGuard,
     },
-    JwtStrategy
+    JwtStrategy,
   ],
-  exports: [JwtService]
+  exports: [JwtService],
 })
 export class AppModule {}

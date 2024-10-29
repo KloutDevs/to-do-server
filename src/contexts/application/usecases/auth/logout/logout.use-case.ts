@@ -1,10 +1,13 @@
 import {Injectable, Inject, BadRequestException} from '@nestjs/common';
-import { AuthRepository } from '@/contexts/domain/repositories';
+import { AuthServicePort } from '@/contexts/domain/services';
 
 @Injectable()
 export class LogoutUseCase {
-    constructor(@Inject('authRepository') private authRepository:AuthRepository){}
-    async execute(userId: string){
-        return await this.authRepository.logout(userId);
+
+    constructor(@Inject('authService') private authService: AuthServicePort) {}
+
+    async run(userId: string){
+
+        return await this.authService.logout(userId);
     }
 }

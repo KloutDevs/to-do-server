@@ -13,11 +13,12 @@
     "strategy": "connection",
   },
   "material-icon-theme.files.associations": {
-    "user.entity.ts": "database",
-    "*.repository.ts": "database",
+    "*.entity.ts": "Typescript-def",
+    "*.repository.port.ts": "template",
+    "*.repository.adapter.ts": "capacitor",
     "*.dto.ts": "deepsource",
-    "*.use-case.ts": "class",
-    "createuser.use-case.ts": "lib"
+    "*.use-case.ts": "lib",
+    "*.todo.ts": "todo"
   },
   "cSpell.words": [
     "usecases"

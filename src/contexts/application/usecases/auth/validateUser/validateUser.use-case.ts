@@ -1,13 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AuthRepository } from '@/contexts/domain/repositories/auth.repository.port';
-import { validateUser } from '@/contexts/domain/models/auth.entity';
+import { AuthServicePort } from '@/contexts/domain/services/auth.service.port';
+import { validateUserBody } from '@/contexts/domain/models/auth.entity';
 import { User } from '@/contexts/domain/models/user.entity';
 
 @Injectable()
 export class ValidateUserUseCase {
-    constructor(@Inject('authRepository') private authRepository: AuthRepository) {}
+    
+    constructor(@Inject('authService') private authService: AuthServicePort) {}
 
-    async validateUser(user: validateUser): Promise<User> {
-        return this.authRepository.validateUser(user);
+    async run(user: validateUserBody): Promise<User> {
+
+        return this.authService.validateUser(user);
+
     }
 }

@@ -70,6 +70,7 @@ model Task {
   updated_at   DateTime  @default(now()) @updatedAt
   due_date     DateTime?
   completed_at DateTime?
+  assignedTo   String    @db.Uuid
   user         User      @relation(fields: [createdBy], references: [id])
   workspace    Workspace @relation(fields: [workspace_id], references: [id])
   subtasks     Subtasks[]
@@ -93,6 +94,7 @@ model WorkspaceCollaborator {
 model Subtasks {
   subtask_id   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   task_id      String    @db.Uuid
+  createdBy    String    @db.Uuid
   title        String    @db.VarChar(255)
   description  String?
   status       Status?   @default(OPEN)
@@ -101,9 +103,11 @@ model Subtasks {
   updated_at   DateTime  @default(now()) @updatedAt
   due_at       DateTime?
   completed_at DateTime?
+  assignedTo   String    @db.Uuid
   task         Task      @relation(fields: [task_id], references: [task_id])
 
   @@id([subtask_id, task_id])
+  @@unique([subtask_id])
 }
 
 model Tags {

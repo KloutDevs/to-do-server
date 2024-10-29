@@ -1,13 +1,12 @@
 import { Module } from '@nestjs/common';
 
 import { ApplicationModule } from '@/contexts/application/application.module';
-import { UserController } from '@/contexts/infrastructure/http-api/v1/users/User.controller';
-import { AuthController } from '@/contexts/infrastructure/http-api/v1/auth/Auth.controller';
 import { JwtService } from '@nestjs/jwt';
+import { WorkspaceController, AuthController, UserController, TaskController, SubTaskController, TagController } from './http-api/v1';
 
 @Module({
   imports: [ApplicationModule],
-  controllers: [AuthController, UserController],
+  controllers: [AuthController, UserController, WorkspaceController, TaskController, SubTaskController, TagController],
   providers: [
     JwtService
   ],

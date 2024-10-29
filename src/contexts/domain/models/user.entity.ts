@@ -1,9 +1,9 @@
-import { Role } from '@/contexts/shared/types/roles';
+import { Role } from '@/contexts/shared/lib/types/';
 export interface User {
   id: string;
   username: string;
   email: string;
-  password: string | null;  // Cambiar a null para coincidir con Prisma
+  password: string | null;
   created_at: Date;
   profile_picture_url: string | null;
   banner_picture_url: string | null;
@@ -14,6 +14,11 @@ export interface User {
   roles: Role[];
 }
 
+export type UserProfile = Pick<User, 'username' | 'profile_picture_url' | 'banner_picture_url' | 'email' | 'name' | 'created_at'>;
+
+export type UserProfileWithoutCreatedAt = Omit<UserProfile, 'created_at'>;
+
+export type UserSettings = Pick<User, 'language_preference' | 'timezone'>;
 export interface verificationToken {
   identifier: string;
   token: string;

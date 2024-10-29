@@ -1,41 +1,26 @@
-import { Module } from '@nestjs/common';
-import { ConfigService, ConfigModule } from '@nestjs/config';
-import { PrismaService } from '@/contexts/infrastructure/prisma/prisma.service';
-import { PrismaUserRepository } from '@/contexts/infrastructure/repositories/prisma-user.repository.adapter';
-import { AuthService } from '@/contexts/infrastructure/repositories/auth.repository.adapter';
-import { PassportModule } from '@nestjs/passport';
-import { 
-  JwtStrategy,
-  LocalStrategy
-} from '@/contexts/shared/strategy';
-import { JwtModule, JwtService } from '@nestjs/jwt';
-import { 
-  LoginUseCase,
-  RegisterUseCase,
-  ValidateUserUseCase,
-  VerifyEmailUseCase,
-  ResetPasswordUseCase,
-  ResendEmailVerificationUseCase,
-  RedisBlacklistUseCase,
-  LogoutUseCase,
-  ChangePasswordUseCase,
- } from '@/contexts/application/usecases/auth';
-import {
-  deleteUserUseCase,
-  getAllUsersUseCase,
-  getUserByEmailUseCase,
-  getUserByIdUseCase,
-  getUserByUsernameUseCase,
-  PartialUpdateUseCase,
-} from '@/contexts/application/usecases/users';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { EmailRepository } from '@/contexts/infrastructure/repositories/email.repository.adapter';
-import { CacheModule } from '@nestjs/cache-manager';
-import {redisStore} from 'cache-manager-redis-yet';
 
+import * as authUseCases from '@/contexts/application/usecases/auth';
+import * as workspaceUseCases from '@/contexts/application/usecases/workspaces';
+import * as userUseCases from '@/contexts/application/usecases/users';
+import * as subTaskUseCases from '@/contexts/application/usecases/subtasks';
+import * as tagsUseCases from '@/contexts/application/usecases/tags';
+import * as tasksUseCases from '@/contexts/application/usecases/tasks';
+import * as repositories from '@/contexts/infrastructure/repositories';
+import * as services from '@/contexts/infrastructure/services';
+
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { JwtStrategy, LocalStrategy } from '@/contexts/shared/lib/strategy';
+import { PrismaService } from '@/contexts/shared/prisma/prisma.service';
+import { ConfigService, ConfigModule } from '@nestjs/config';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { redisStore } from 'cache-manager-redis-yet';
+import { CacheModule } from '@nestjs/cache-manager';
+import { PassportModule } from '@nestjs/passport';
+import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
+
   imports: [
     PassportModule,
     JwtModule.registerAsync({
@@ -59,8 +44,14 @@ import {redisStore} from 'cache-manager-redis-yet';
             user: configService.get<string>('MAILJET_PUBLIC_KEY'),
             pass: configService.get<string>('MAILJET_SECRET_KEY'),
           },
-          logger: (configService.get<string>('NODE_ENV') == 'development') ? true : false,
-          debug: (configService.get<string>('NODE_ENV') == 'development') ? true : false
+          logger:
+            configService.get<string>('NODE_ENV') == 'development'
+              ? true
+              : false,
+          debug:
+            configService.get<string>('NODE_ENV') == 'development'
+              ? true
+              : false,
         },
         defaults: {
           from: `"${process.env.MAILJET_FROM_NAME}" <${process.env.MAILJET_FROM_EMAIL}>`,
@@ -89,58 +80,69 @@ import {redisStore} from 'cache-manager-redis-yet';
       isGlobal: true,
     }),
   ],
+
+  // 
   providers: [
-    LoginUseCase,
-    ValidateUserUseCase,
-    RegisterUseCase,
-    LogoutUseCase,
-    VerifyEmailUseCase,
-    ResetPasswordUseCase,
-    ChangePasswordUseCase,
-    ResendEmailVerificationUseCase,
-    RedisBlacklistUseCase,
-    getUserByIdUseCase,
-    getUserByEmailUseCase,
-    getUserByUsernameUseCase,
-    deleteUserUseCase,
-    PartialUpdateUseCase,
-    getAllUsersUseCase,
+
+    // Add the use cases to the providers array because otherwise they can't be exported.
+    ...Object.values(authUseCases),
+    ...Object.values(userUseCases),
+    ...Object.values(workspaceUseCases),
+    ...Object.values(tasksUseCases),
+    ...Object.values(subTaskUseCases),
+    ...Object.values(tagsUseCases),
+
+    // Add all strategies and services for the use in use-cases
     PrismaService,
     JwtStrategy,
     LocalStrategy,
+
+    // Add the repositories and services to the providers array for the injection in the use-cases
     {
       provide: 'userRepository',
-      useClass: PrismaUserRepository,
+      useClass: repositories.PrismaUserRepository,
     },
     {
-      provide: 'authRepository',
-      useClass: AuthService,
+      provide: 'authService',
+      useClass: services.AuthService,
     },
     {
-      provide: 'mailRepository',
-      useClass: EmailRepository,
+      provide: 'workspaceRepository',
+      useClass: repositories.PrismaWorkspaceRepository,
     },
+    {
+      provide: 'subTaskRepository',
+      useClass: repositories.PrismaSubTaskRepository,
+    },
+    {
+      provide: 'tagRepository',
+      useClass: repositories.PrismaTagRepository,
+    },
+    {
+      provide: 'taskRepository',
+      useClass: repositories.PrismaTaskRepository,
+    },
+    {
+      provide: 'mailService',
+      useClass: services.NestMailRepository,
+    },
+    
+    // Add the ConfigService for the use in the use-cases
     {
       provide: 'configService',
       useClass: ConfigService,
-    }
+    },
   ],
+
+  // Export the use cases from the application module for the use in the infrastructure module
   exports: [
-    LoginUseCase,
-    ValidateUserUseCase,
-    RegisterUseCase,
-    LogoutUseCase,
-    ResetPasswordUseCase,
-    ChangePasswordUseCase,
-    VerifyEmailUseCase,
-    ResendEmailVerificationUseCase,
-    RedisBlacklistUseCase,
-    getUserByIdUseCase,
-    getUserByEmailUseCase,
-    getUserByUsernameUseCase,
-    deleteUserUseCase,
-    PartialUpdateUseCase,
-    getAllUsersUseCase
+    ...Object.values(authUseCases),
+    ...Object.values(userUseCases),
+    ...Object.values(workspaceUseCases),
+    ...Object.values(tasksUseCases),
+    ...Object.values(subTaskUseCases),
+    ...Object.values(tagsUseCases),
   ],
+
 })
 export class ApplicationModule {}
